@@ -205,6 +205,7 @@ class Ship {
     this.invincible    = 3;
     this.shootCooldown = 0;
     this.speedBoost    = 0;
+    this.tripleShot    = 0;
     this.dead          = false;
   }
 
@@ -213,6 +214,7 @@ class Ship {
     if (this.invincible    > 0) this.invincible    -= dt;
     if (this.shootCooldown > 0) this.shootCooldown -= dt;
     if (this.speedBoost    > 0) this.speedBoost    -= dt;
+    if (this.tripleShot    > 0) this.tripleShot    -= dt;
 
     const ROT   = 3.5;   // rad/s
     const THRUST = 260;  // px/s²
@@ -242,6 +244,19 @@ class Ship {
     const NOSE = 21;
     const ox = this.x + Math.cos(this.angle) * NOSE;
     const oy = this.y + Math.sin(this.angle) * NOSE;
+
+    // Power-up "Triple disparo": 3 balas paralelas en línea recta
+    if (this.tripleShot > 0) {
+      const SPREAD = 7;
+      const px = Math.cos(this.angle + Math.PI / 2) * SPREAD;
+      const py = Math.sin(this.angle + Math.PI / 2) * SPREAD;
+      return [
+        new Bullet(ox,          oy,          this.angle),
+        new Bullet(ox + px,     oy + py,     this.angle),
+        new Bullet(ox - px,     oy - py,     this.angle),
+      ];
+    }
+
     return [new Bullet(ox, oy, this.angle)];
   }
 
@@ -312,9 +327,12 @@ class Particle {
   }
 }
 
-// ── Power-up (Velocidad) ──────────────────────────────────────────────────────
+// ── Power-ups (Velocidad / Triple disparo) ────────────────────────────────────
+const POWERUP_COLORS = { speed: '#ffd642', triple: '#4ec9ff' };
+
 class PowerUp {
-  constructor(x, y) {
+  constructor(x, y, type = 'speed') {
+    this.type = type;
     this.x = x;
     this.y = y;
     this.radius = 14;
@@ -341,10 +359,10 @@ class PowerUp {
     ctx.save();
     ctx.translate(this.x, this.y);
     ctx.rotate(this.rot);
-    ctx.strokeStyle = '#ffd642';
+    ctx.strokeStyle = POWERUP_COLORS[this.type];
     ctx.lineWidth   = 1.5;
     ctx.lineJoin    = 'round';
-    // Rombo con rayo
+    // Rombo con símbolo según el tipo
     ctx.beginPath();
     ctx.moveTo(0, -this.radius);
     ctx.lineTo(this.radius, 0);
@@ -352,12 +370,23 @@ class PowerUp {
     ctx.lineTo(-this.radius, 0);
     ctx.closePath();
     ctx.stroke();
-    ctx.beginPath();
-    ctx.moveTo(2, -6);
-    ctx.lineTo(-3, 1);
-    ctx.lineTo(1, 1);
-    ctx.lineTo(-2, 6);
-    ctx.stroke();
+    if (this.type === 'speed') {
+      // Rayo (Velocidad)
+      ctx.beginPath();
+      ctx.moveTo(2, -6);
+      ctx.lineTo(-3, 1);
+      ctx.lineTo(1, 1);
+      ctx.lineTo(-2, 6);
+      ctx.stroke();
+    } else {
+      // Tres barras paralelas (Triple disparo)
+      ctx.beginPath();
+      for (const dx of [-5, 0, 5]) {
+        ctx.moveTo(dx, -6);
+        ctx.lineTo(dx, 6);
+      }
+      ctx.stroke();
+    }
     ctx.restore();
   }
 }
@@ -465,9 +494,10 @@ function update(dt) {
         a.dead = true;
         score += a.points ?? POINTS[a.size];
         explode(a.x, a.y, a.size ? a.size * 5 : 14);
-        // Drop del power-up "Velocidad" (12% de probabilidad, máx. 3 en pantalla)
+        // Drop de power-up (12% de probabilidad, máx. 3 en pantalla): el tipo
+        // se sortea 50/50 entre Velocidad y Triple disparo
         if (Math.random() < 0.12 && powerUps.length < 3)
-          powerUps.push(new PowerUp(a.x, a.y));
+          powerUps.push(new PowerUp(a.x, a.y, Math.random() < 0.5 ? 'speed' : 'triple'));
         newAsteroids.push(...a.split());
       }
     }
@@ -490,7 +520,9 @@ function update(dt) {
     for (const u of powerUps) {
       if (dist(ship, u) < ship.radius + u.radius) {
         u.dead = true;
-        ship.speedBoost = 5;   // reinicia el efecto a 5s (no acumula)
+        // Reinicia el efecto a 5s (no acumula); los dos efectos son independientes
+        if (u.type === 'triple') ship.tripleShot = 5;
+        else                     ship.speedBoost = 5;
         explode(u.x, u.y, 6);
       }
     }
@@ -533,11 +565,17 @@ function drawHUD() {
   ctx.textAlign = 'left';
   ctx.fillText(`SCORE  ${score}`, 14, 26);
 
-  if (ship.speedBoost > 0 && !ship.dead) {
-    ctx.fillStyle = '#ffd642';
-    ctx.fillText(`VELOCIDAD ${ship.speedBoost.toFixed(1)}s`, 14, 48);
-    ctx.fillStyle = '#fff';
-  }
+  // Efectos activos: se apilan en una línea por efecto (pueden coexistir)
+  const effects = [];
+  if (ship.speedBoost > 0 && !ship.dead)
+    effects.push([`VELOCIDAD ${ship.speedBoost.toFixed(1)}s`, POWERUP_COLORS.speed]);
+  if (ship.tripleShot > 0 && !ship.dead)
+    effects.push([`TRIPLE ${ship.tripleShot.toFixed(1)}s`, POWERUP_COLORS.triple]);
+  effects.forEach(([label, color], i) => {
+    ctx.fillStyle = color;
+    ctx.fillText(label, 14, 48 + i * 22);
+  });
+  ctx.fillStyle = '#fff';
 
   ctx.textAlign = 'center';
   ctx.fillText(`NIVEL ${level}`, W / 2, 26);
