@@ -24,11 +24,12 @@ Luego visita `http://localhost:3000`.
 
 ## Controles
 
-| Tecla     | Acción     |
-| --------- | ---------- |
-| `←` `→`   | Rotar nave |
-| `↑`       | Propulsar  |
-| `Espacio` | Disparar   |
+| Tecla     | Acción                  |
+| --------- | ----------------------- |
+| `←` `→`   | Rotar nave              |
+| `↑`       | Propulsar               |
+| `Espacio` | Disparar                |
+| `C`       | Cambiar skin de la nave |
 
 ## Puntuación
 
@@ -46,3 +47,4 @@ Luego visita `http://localhost:3000`.
 - Partículas de explosión al destruir asteroides
 - Power-up «Velocidad»: duplica la propulsión de la nave durante 5 segundos
 - Estrella fugaz: asteroide especial veloz que desaparece con el tiempo (500 puntos)
+- Sistema de skins: 4 naves (Clásica, Caza, Espectro y Pionera) con silueta y colores propios; se cambian con `C` y la preferencia se guarda en el navegador (localStorage)
