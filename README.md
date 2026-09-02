@@ -46,4 +46,5 @@ Luego visita `http://localhost:3000`.
 - Partículas de explosión al destruir asteroides
 - Power-up «Velocidad»: duplica la propulsión de la nave durante 5 segundos
 - Power-up «Triple disparo»: la nave dispara 3 balas paralelas en línea recta durante 5 segundos
+- Power-up «Escudo»: anillo protector que destruye asteroides al contacto (sin puntos) y aguanta 3 impactos
 - Estrella fugaz: asteroide especial veloz que desaparece con el tiempo (500 puntos)
