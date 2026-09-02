@@ -221,6 +221,15 @@ const SKINS = [
     verts: [[16, 0], [-4, -11], [-10, -8], [-12, 0], [-10, 8], [-4, 11]],
     nose: 17, flameX: -11,
   },
+  {
+    id: 'titan', nombre: 'TITÁN',
+    stroke: '#b967ff', flame: 'rgba(185, 103, 255, 0.85)',
+    glow: '#b967ff',
+    scale: 2,
+    multiplier: 2,
+    verts: [[40, 0], [-24, -18], [-14, 0], [-24, 18]],
+    nose: 42, flameX: -16,
+  },
 ];
 
 let skinIndex = 0;   // skin activa
@@ -241,6 +250,11 @@ function cycleSkin() {
   skinIndex = (skinIndex + 1) % SKINS.length;
   skinToast = 1.5;
   saveSkin();
+  if (ship) {
+    const scale = SKINS[skinIndex].scale ?? 1;
+    ship.radius = 12 * scale;
+    ship.shieldR = SHIELD_R * scale;
+  }
 }
 
 // ── Ship ──────────────────────────────────────────────────────────────────────
@@ -256,7 +270,9 @@ class Ship {
     this.angle  = -Math.PI / 2;
     this.vx     = 0;
     this.vy     = 0;
-    this.radius = 12;
+    const scale = SKINS[skinIndex].scale ?? 1;
+    this.radius = 12 * scale;
+    this.shieldR = SHIELD_R * scale;
     this.thrusting     = false;
     this.invincible    = 3;
     this.shootCooldown = 0;
@@ -363,7 +379,7 @@ class Ship {
       ctx.shadowColor = '#7fd4ff';
       ctx.shadowBlur  = 8;
       ctx.beginPath();
-      ctx.arc(0, 0, SHIELD_R * pulse, 0, Math.PI * 2);
+      ctx.arc(0, 0, this.shieldR * pulse, 0, Math.PI * 2);
       ctx.stroke();
     }
 
@@ -594,7 +610,9 @@ function update(dt) {
       if (!a.dead && !b.dead && dist(b, a) < a.radius) {
         b.dead = true;
         a.dead = true;
-        score += a.points ?? POINTS[a.size];
+        const basePoints = a.points ?? POINTS[a.size];
+        const mult = SKINS[skinIndex].multiplier ?? 1;
+        score += basePoints * mult;
         explode(a.x, a.y, a.size ? a.size * 5 : 14);
         // Drop de power-up (12% de probabilidad, máx. 3 en pantalla): el tipo
         // se sortea a partes iguales entre Velocidad, Triple disparo y Escudo
@@ -612,7 +630,7 @@ function update(dt) {
     const splits = [];
     for (const a of asteroids) {
       // El escudo destruye el peligro al contacto (sin puntos) y gasta 1 impacto
-      if (ship.shieldHits > 0 && dist(ship, a) < SHIELD_R + a.radius) {
+      if (ship.shieldHits > 0 && dist(ship, a) < ship.shieldR + a.radius) {
         a.dead = true;
         ship.shieldHits--;
         explode(a.x, a.y, a.size ? a.size * 5 : 14);

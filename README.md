@@ -49,4 +49,5 @@ Luego visita `http://localhost:3000`.
 - Power-up «Triple disparo»: la nave dispara 3 balas paralelas en línea recta durante 5 segundos
 - Power-up «Escudo»: anillo protector que destruye asteroides al contacto (sin puntos) y aguanta 3 impactos
 - Estrella fugaz: asteroide especial veloz que desaparece con el tiempo (500 puntos)
-- Sistema de skins: 4 naves (Clásica, Caza, Espectro y Pionera) con silueta y colores propios; se cambian con `C` y la preferencia se guarda en el navegador (localStorage)
+- Sistema de skins: 5 naves (Clásica, Caza, Espectro, Pionera y Titán) con silueta y colores propios; se cambian con `C` y la preferencia se guarda en el navegador (localStorage)
+- Nave «Titán»: nave morada del doble de tamaño que otorga el doble de puntos al destruir asteroides
