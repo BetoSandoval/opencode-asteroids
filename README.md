@@ -45,4 +45,5 @@ Luego visita `http://localhost:3000`.
 - Asteroides se parten en fragmentos más pequeños al ser destruidos
 - Partículas de explosión al destruir asteroides
 - Power-up «Velocidad»: duplica la propulsión de la nave durante 5 segundos
+- Power-up «Escudo»: anillo protector que destruye asteroides al contacto (sin puntos) y aguanta 3 impactos
 - Estrella fugaz: asteroide especial veloz que desaparece con el tiempo (500 puntos)
